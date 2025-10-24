@@ -357,3 +357,7 @@ def init_user_performance_table():
         return {"status": "success", "message": "Table created or already exists"}
     except Exception as e:
         return {"status": "error", "message": str(e)}
+    
+@app.get("/")
+def root():
+    return {"message": "Welcome to EduTrackAI Backend. Visit /docs for API documentation."}
