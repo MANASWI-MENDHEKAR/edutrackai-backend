@@ -362,32 +362,26 @@ def init_user_performance_table():
 def root():
     return {"message": "Welcome to EduTrackAI Backend. Visit /docs for API documentation."}
 
-from minio import Minio
-import io
-
-# MinIO client setup
-minio_client = Minio(
-    os.getenv("MINIO_ENDPOINT"),
-    access_key=os.getenv("MINIO_ACCESS_KEY"),
-    secret_key=os.getenv("MINIO_SECRET_KEY"),
-    secure=False  # Set to True if using HTTPS
-)
+import requests
 
 @app.post("/api/upload-to-minio")
 async def upload_to_minio(file: UploadFile = File(...)):
-    bucket = os.getenv("MINIO_BUCKET_NAME")
-    
-    # Create bucket if it doesn't exist
-    if not minio_client.bucket_exists(bucket):
-        minio_client.make_bucket(bucket)
+    endpoint = os.getenv("MINIO_ENDPOINT")  # e.g. "your-minio-host:9000"
+    bucket = os.getenv("MINIO_BUCKET_NAME")  # e.g. "uploads"
+    access_key = os.getenv("MINIO_ACCESS_KEY")
+    secret_key = os.getenv("MINIO_SECRET_KEY")
 
     content = await file.read()
-    minio_client.put_object(
-        bucket,
-        file.filename,
-        io.BytesIO(content),
-        length=len(content),
-        content_type=file.content_type
+    url = f"http://{endpoint}/{bucket}/{file.filename}"
+
+    response = requests.put(
+        url,
+        data=content,
+        headers={"Content-Type": file.content_type},
+        auth=(access_key, secret_key)
     )
 
-    return {"filename": file.filename, "message": "File uploaded to MinIO"}
+    if response.status_code in [200, 204]:
+        return {"message": "File uploaded to MinIO", "filename": file.filename}
+    else:
+        return {"error": response.text, "status_code": response.status_code}
