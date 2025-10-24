@@ -332,3 +332,29 @@ def test_db_connection():
     except Exception as e:
         print("DB connection error:", e)
         return {"status": "error", "message": str(e)}
+    
+@app.get("/init-user-performance-table")
+def init_user_performance_table():
+    try:
+        conn = psycopg2.connect(
+            host=os.getenv("DB_HOST"),
+            port=os.getenv("DB_PORT"),
+            user=os.getenv("DB_USER"),
+            password=os.getenv("DB_PASS"),
+            database=os.getenv("DB_NAME")
+        )
+        cur = conn.cursor()
+        cur.execute("""
+            CREATE TABLE IF NOT EXISTS public.user_performance (
+                user_id SERIAL PRIMARY KEY,
+                name TEXT NOT NULL,
+                score INTEGER,
+                remarks TEXT
+            );
+        """)
+        conn.commit()
+        cur.close()
+        conn.close()
+        return {"status": "success", "message": "Table created or already exists"}
+    except Exception as e:
+        return {"status": "error", "message": str(e)}
