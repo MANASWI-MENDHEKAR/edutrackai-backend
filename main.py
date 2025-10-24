@@ -372,7 +372,7 @@ async def upload_to_minio(file: UploadFile = File(...)):
     secret_key = os.getenv("MINIO_SECRET_KEY")
 
     content = await file.read()
-    url = f"http://{endpoint}/{bucket}/{file.filename}"
+    url = f"http://unangular-topotypic-marybeth.ngrok-free.dev/sihuploads/hallwayofstatue.png"
 
     response = requests.put(
         url,
