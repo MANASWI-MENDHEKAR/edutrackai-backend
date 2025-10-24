@@ -290,7 +290,7 @@ class UserPerformance(BaseModel):
     score: int
     remarks: str
 
-# PostgreSQL endpoint using psycopg2
+# Get user performance
 @app.get("/userPerformance/GetUserPerformance", response_model=List[UserPerformance])
 def get_user_performance():
     try:
@@ -300,23 +300,21 @@ def get_user_performance():
             user=os.getenv("DB_USER"),
             password=os.getenv("DB_PASS"),
             database=os.getenv("DB_NAME")
-
         )
         cur = conn.cursor()
         cur.execute("SELECT user_id, name, score, remarks FROM public.user_performance ORDER BY user_id ASC;")
         rows = cur.fetchall()
         cur.close()
         conn.close()
-
         return [
             {"user_id": r[0], "name": r[1], "score": r[2], "remarks": r[3]}
             for r in rows
         ]
-
     except Exception as e:
         print("Error:", e)
         raise HTTPException(status_code=500, detail=str(e))
-    
+
+# Test DB connection
 @app.get("/test-db")
 def test_db_connection():
     try:
@@ -332,7 +330,8 @@ def test_db_connection():
     except Exception as e:
         print("DB connection error:", e)
         return {"status": "error", "message": str(e)}
-    
+
+# Create user_performance table
 @app.get("/init-user-performance-table")
 def init_user_performance_table():
     try:
